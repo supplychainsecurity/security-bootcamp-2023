@@ -27,4 +27,4 @@ jobs:
       - uses: chainguard-dev/actions/setup-gitsign@main
       - shell: bash
         run: |
-          gitsign verify --certificate-identity="${{ github.event.pusher.email }}" --certificate-oidc-issuer=https://accounts.google.com HEAD
+          gitsign verify --certificate-identity=${{ github.event.pusher.name }} --certificate-oidc-issuer=https://accounts.google.com HEAD
