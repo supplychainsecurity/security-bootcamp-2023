@@ -1,0 +1,17 @@
+name: Enforce - Commit Signing
+on:
+  push:
+
+permissions:
+  contents: read
+jobs:
+  verify-signature:
+    runs-on: ubuntu-latest
+    name: Verify signed signature
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chainguard-dev/actions/setup-gitsign@main
+      - shell: bash
+        id: gitsign-verify
+        run: |
+          gitsign verify --certificate-identity=${{ github.event.pusher.email }} --certificate-oidc-issuer=https://github.com/login/oauth HEAD
