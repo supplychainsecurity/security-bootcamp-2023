@@ -1,8 +1,10 @@
-name: Verify Commit
-description: This action verifies the PR commit using Gitsign.
+name: Verify Commit signature
 on:
-  - push
-  - pull_request
+  push:
+  pull_request:
+
+permissions:
+  contents: read
 jobs:
   verify:
     runs-on: ubuntu-latest
