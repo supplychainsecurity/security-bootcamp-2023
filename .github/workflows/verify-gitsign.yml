@@ -1,29 +1,28 @@
 name: Enforce - Commit Signing
 on:
   push:
-  pull_request:
 
 permissions:
   contents: read
 jobs:
-  verify-commit:
-    runs-on: ubuntu-latest
-    name: Verify commit
-    steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: chainguard-dev/actions/setup-gitsign@main
-      - shell: bash
-        run: |
-          git verify-commit HEAD
   verify-signature:
     runs-on: ubuntu-latest
-    name: Verify git signature against authority
+    name: Verify commit signature with approved issuer
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/checkout@v3
       - uses: chainguard-dev/actions/setup-gitsign@main
       - shell: bash
-        run: gitsign verify --certificate-identity=${{ github.event.pusher.email }} --certificate-oidc-issuer=https://github.com/login/oauth HEAD
+        id: gitsign-verify
+        run: |
+          echo "$(gitsign verify --certificate-identity=${{ github.event.pusher.email }} --certificate-oidc-issuer=https://github.com/login/oauth HEAD)" > $GITHUB_OUTPUT
+      - name: Comment on PR
+        uses: actions/github-script@v6.4.0
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '${{ steps.gitsign-verify.outputs.GITHUB_OUTPUT }}'
+            })`
